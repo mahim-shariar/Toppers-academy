@@ -42,11 +42,11 @@ const HeroSection = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentCardIndex((prev) => (prev + 1) % courses.length);
-    }, 6000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [courses.length]);
 
-  // Create abstract animated shapes
+  // Create abstract animated shapes with smoother animation
   useEffect(() => {
     const container = animationRef.current;
     if (!container) return;
@@ -85,11 +85,28 @@ const HeroSection = () => {
         }`;
       }
 
-      const duration = Math.random() * 10 + 10;
+      const duration = Math.random() * 20 + 20; // Longer duration for smoother movement
       const delay = Math.random() * 5;
 
-      shape.style.animation = `float ${duration}s ease-in-out ${delay}s infinite alternate`;
+      shape.style.transition = `all ${duration}s cubic-bezier(0.4, 0, 0.2, 1) ${delay}s infinite`;
+      shape.style.willChange = "transform, opacity";
       container.appendChild(shape);
+
+      // Animate with CSS transforms for better performance
+      const animateShape = () => {
+        const x = (Math.random() - 0.5) * 40;
+        const y = (Math.random() - 0.5) * 40;
+        const rotate = (Math.random() - 0.5) * 20;
+
+        shape.style.transform = `translate(${x}px, ${y}px) rotate(${rotate}deg)`;
+
+        setTimeout(() => {
+          shape.style.transform = `translate(${-x}px, ${-y}px) rotate(${-rotate}deg)`;
+          setTimeout(animateShape, duration * 1000);
+        }, (duration * 1000) / 2);
+      };
+
+      animateShape();
     }
 
     return () => {
@@ -130,15 +147,15 @@ const HeroSection = () => {
         className="absolute inset-0 overflow-hidden pointer-events-none"
       />
 
-      {/* Subtle grid pattern */}
+      {/* Smoother grid pattern animation */}
       <motion.div
         className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48cGF0aCBkPSJNMCAzMEg2ME0zMCAwVjYwIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiIHN0cm9rZS13aWR0aD0iMSIvPjwvc3ZnPg==')]"
         animate={{
-          x: [0, -30, 0],
-          y: [0, -15, 0],
+          x: [0, -15, 0],
+          y: [0, -10, 0],
         }}
         transition={{
-          duration: 20,
+          duration: 30, // Longer duration for smoother movement
           repeat: Infinity,
           repeatType: "reverse",
           ease: "linear",
@@ -235,7 +252,7 @@ const HeroSection = () => {
                 animate={{
                   opacity: 1,
                   x: 0,
-                  transition: { duration: 0.8, ease: "easeInOut" },
+                  transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
                 }}
                 exit={{ opacity: 0, x: -100 }}
                 className="absolute inset-0 px-4"
@@ -271,19 +288,6 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-
-      {/* CSS for animations */}
-      <style jsx>{`
-        @keyframes float {
-          0%,
-          100% {
-            transform: translateY(0) translateX(0) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-20px) translateX(10px) rotate(5deg);
-          }
-        }
-      `}</style>
     </section>
   );
 };
@@ -298,7 +302,7 @@ const CourseCard = ({ course, isActive }) => {
       }`}
       animate={{
         scale: isActive ? 1 : 0.95,
-        transition: { duration: 0.5 },
+        transition: { duration: 0.5, ease: "easeOut" },
       }}
     >
       {/* Image Background with Overlay */}
@@ -324,6 +328,7 @@ const CourseCard = ({ course, isActive }) => {
             duration: 3,
             repeat: Infinity,
             repeatType: "reverse",
+            ease: "easeInOut",
           }}
         >
           {course.icon}
@@ -354,6 +359,7 @@ const CourseCard = ({ course, isActive }) => {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 400, damping: 10 }}
           className="w-full py-3 rounded-lg bg-yellow-400 text-blue-900 font-bold shadow-md flex items-center justify-center gap-2 hover:bg-yellow-300 transition-colors"
         >
           Enquire Now
@@ -367,7 +373,7 @@ const CourseCard = ({ course, isActive }) => {
           className="absolute -bottom-20 -left-20 w-64 h-64 bg-yellow-400/10 rounded-full blur-xl"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 0.3, scale: 1 }}
-          transition={{ duration: 1 }}
+          transition={{ duration: 1, ease: "easeOut" }}
         />
       )}
     </motion.div>
