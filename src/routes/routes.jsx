@@ -6,6 +6,7 @@ import { ErrorPage } from "./ErrorPage";
 import AllCoureses from "../pages/AllCoureses";
 import CourseDetails from "../components/CoursesPage/CourseDetails";
 import { DashboardLayout } from "../components/Dashboard/DashboardLayout";
+import LoginForm from "../pages/LoginForm";
 
 const Home = lazy(() => import("../pages/Home"));
 const DashboardHome = lazy(() => import("../pages/Dashboard/DashboardHome"));
@@ -19,9 +20,7 @@ const StudentsManagement = lazy(() =>
   import("../pages/Dashboard/StudentsManagement")
 );
 const SuccessStories = lazy(() => import("../pages/Dashboard/SuccessStories"));
-const CategoriesManagement = lazy(() =>
-  import("../pages/Dashboard/CategoriesManagement")
-);
+
 const SettingsPage = lazy(() => import("../pages/Dashboard/Settings"));
 const ChangePassword = lazy(() => import("../pages/Dashboard/ChangePassword"));
 
@@ -69,10 +68,7 @@ export const router = createBrowserRouter([
         path: "success-stories",
         element: <SuccessStories />,
       },
-      {
-        path: "categories",
-        element: <CategoriesManagement />,
-      },
+
       {
         path: "settings",
         element: <SettingsPage />,
@@ -82,5 +78,9 @@ export const router = createBrowserRouter([
         element: <ChangePassword />,
       },
     ],
+  },
+  {
+    path: "login",
+    element: <LoginForm />,
   },
 ]);
