@@ -19,21 +19,61 @@ import { useState, useEffect } from "react";
 import Modal from "../../components/Modal";
 
 const StudentsManagement = () => {
-  // Organized subjects
-  const coreSubjects = [
+  // Core Subjects (for display only)
+  const sscCoreSubjects = ["Bangla", "English", "Mathematics"];
+  const hscCoreSubjects = [
     "Bangla",
     "English",
     "Information and Communication Technology",
   ];
 
-  const scienceSubjects = [
+  // SSC Science Subjects
+  const sscScienceSubjects = [
+    "Physics",
+    "Chemistry",
+    "Biology",
+    "Higher Mathematics",
+    "Islam & Moral Education",
+    "Bangladesh & World",
+    "Agriculture Studies",
+    "Home Science",
+  ];
+
+  // SSC Humanities Subjects
+  const sscHumanitiesSubjects = [
+    "Geography",
+    "Civic & Citizenship",
+    "Economics",
+    "General Science",
+    "Islam & Moral Education",
+    "History of Bangladesh",
+    "Agriculture Studies",
+    "Home Science",
+    "Music",
+  ];
+
+  // SSC Commerce Subjects
+  const sscCommerceSubjects = [
+    "Finance & Banking",
+    "Accounting",
+    "Business Entrepreneurship",
+    "General Science",
+    "Islam & Moral Education",
+    "Agriculture Studies",
+    "Home Science",
+    "Music",
+  ];
+
+  // HSC Science Subjects
+  const hscScienceSubjects = [
     "Physics",
     "Chemistry",
     "Biology",
     "Higher Mathematics",
   ];
 
-  const humanitiesSubjects = [
+  // HSC Humanities Subjects
+  const hscHumanitiesSubjects = [
     "History",
     "Islamic History",
     "Geography",
@@ -48,7 +88,8 @@ const StudentsManagement = () => {
     "Economics",
   ];
 
-  const commerceSubjects = [
+  // HSC Commerce Subjects
+  const hscCommerceSubjects = [
     "Accounting",
     "Finance & Banking",
     "Statistics",
@@ -58,6 +99,9 @@ const StudentsManagement = () => {
 
   // Course types
   const courseTypes = [
+    "SSC Science",
+    "SSC Humanities",
+    "SSC Commerce",
     "HSC Science",
     "HSC Humanities",
     "HSC Commerce",
@@ -66,72 +110,69 @@ const StudentsManagement = () => {
     "University Admission",
   ];
 
-  // Sample student data
+  // Combine all subjects for filtering
+  const allSubjects = [
+    ...new Set([
+      ...sscCoreSubjects,
+      ...hscCoreSubjects,
+      ...sscScienceSubjects,
+      ...sscHumanitiesSubjects,
+      ...sscCommerceSubjects,
+      ...hscScienceSubjects,
+      ...hscHumanitiesSubjects,
+      ...hscCommerceSubjects,
+    ]),
+  ].sort();
+
+  // Sample student data (without core subjects in the data)
   const [students, setStudents] = useState([
     {
-      id: "HSC-SCI-2023-001",
+      id: "SSC-SCI-2023-001",
       name: "Rahim Khan",
-      courseType: "HSC Science",
-      subjects: ["Physics", "Chemistry", "Higher Mathematics"],
+      courseType: "SSC Science",
+      subjects: ["Physics", "Chemistry", "Biology"], // Only elective subjects
       contact: "01712345678",
       parentContact: "01712345679",
       joinDate: "2023-01-15",
       feePaid: true,
       address: "Mirpur, Dhaka",
-      batch: "Morning",
       lastPayment: "2023-10-05",
     },
     {
-      id: "HSC-HUM-2023-002",
+      id: "SSC-HUM-2023-002",
       name: "Karim Ahmed",
-      courseType: "HSC Humanities",
-      subjects: ["History", "Geography", "Civic & Good Governance"],
+      courseType: "SSC Humanities",
+      subjects: ["History of Bangladesh", "Geography", "Civic & Citizenship"],
       contact: "01787654321",
       parentContact: "01787654322",
       joinDate: "2023-02-20",
       feePaid: false,
       address: "Uttara, Dhaka",
-      batch: "Evening",
       lastPayment: null,
     },
     {
-      id: "MED-2023-003",
+      id: "HSC-SCI-2023-003",
       name: "Fatima Begum",
-      courseType: "Medical Admission",
-      subjects: ["Biology", "Chemistry", "Physics"],
+      courseType: "HSC Science",
+      subjects: ["Physics", "Chemistry", "Biology"],
       contact: "01812345678",
       parentContact: "01812345679",
       joinDate: "2023-03-10",
       feePaid: true,
       address: "Dhanmondi, Dhaka",
-      batch: "Weekend",
       lastPayment: "2023-10-10",
-    },
-    {
-      id: "HSC-COM-2023-004",
-      name: "Ayesha Akter",
-      courseType: "HSC Commerce",
-      subjects: ["Accounting", "Finance & Banking", "Economics"],
-      contact: "01912345678",
-      parentContact: "01912345679",
-      joinDate: "2023-01-05",
-      feePaid: true,
-      address: "Gulshan, Dhaka",
-      batch: "Morning",
-      lastPayment: "2023-09-28",
     },
   ]);
 
   const [newStudent, setNewStudent] = useState({
     name: "",
     courseType: "",
-    subjects: [],
+    subjects: [], // Only stores elective subjects
     contact: "",
     parentContact: "",
     joinDate: "",
     feePaid: false,
     address: "",
-    batch: "Morning",
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -140,21 +181,26 @@ const StudentsManagement = () => {
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState("");
   const [selectedCourseFilter, setSelectedCourseFilter] = useState("");
   const [feeStatusFilter, setFeeStatusFilter] = useState("all");
-  const [batchFilter, setBatchFilter] = useState("all");
   const [maxSubjectsSelected, setMaxSubjectsSelected] = useState(false);
 
-  // Track when maximum subjects are selected
+  // Track when maximum subjects are selected (only counting electives)
   useEffect(() => {
     setMaxSubjectsSelected(newStudent.subjects.length >= 4);
   }, [newStudent.subjects]);
 
   // Generate student ID
   const generateStudentId = (courseType) => {
-    const prefix = courseType.includes("Science")
+    const prefix = courseType.includes("SSC Science")
+      ? "SSC-SCI"
+      : courseType.includes("SSC Humanities")
+      ? "SSC-HUM"
+      : courseType.includes("SSC Commerce")
+      ? "SSC-COM"
+      : courseType.includes("HSC Science")
       ? "HSC-SCI"
-      : courseType.includes("Humanities")
+      : courseType.includes("HSC Humanities")
       ? "HSC-HUM"
-      : courseType.includes("Commerce")
+      : courseType.includes("HSC Commerce")
       ? "HSC-COM"
       : courseType.includes("Medical")
       ? "MED"
@@ -168,12 +214,14 @@ const StudentsManagement = () => {
 
   const handleAddStudent = () => {
     if (newStudent.name && newStudent.courseType && newStudent.contact) {
-      // Ensure at least 4 subjects are selected for HSC students
+      // Ensure at least 1 elective subject is selected for SSC/HSC students
+      // (since core subjects are not stored in the data)
       if (
-        newStudent.courseType.includes("HSC") &&
-        newStudent.subjects.length < 4
+        (newStudent.courseType.includes("SSC") ||
+          newStudent.courseType.includes("HSC")) &&
+        newStudent.subjects.length < 1
       ) {
-        alert("Please select at least 4 subjects for HSC students");
+        alert("Please select at least 1 elective subject for SSC/HSC students");
         return;
       }
 
@@ -207,7 +255,6 @@ const StudentsManagement = () => {
       joinDate: "",
       feePaid: false,
       address: "",
-      batch: "Morning",
     });
     setEditingId(null);
     setMaxSubjectsSelected(false);
@@ -242,13 +289,24 @@ const StudentsManagement = () => {
     }
   };
 
+  // Get all subjects for display (including core for the current course type)
+  const getAllDisplaySubjects = (student) => {
+    let coreSubjects = [];
+    if (student.courseType.includes("SSC")) {
+      coreSubjects = [...sscCoreSubjects];
+    } else if (student.courseType.includes("HSC")) {
+      coreSubjects = [...hscCoreSubjects];
+    }
+    return [...coreSubjects, ...student.subjects];
+  };
+
   // Filter students
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSubject = selectedSubjectFilter
-      ? student.subjects.includes(selectedSubjectFilter)
+      ? getAllDisplaySubjects(student).includes(selectedSubjectFilter)
       : true;
     const matchesCourse = selectedCourseFilter
       ? student.courseType === selectedCourseFilter
@@ -259,17 +317,29 @@ const StudentsManagement = () => {
         : feeStatusFilter === "paid"
         ? student.feePaid
         : !student.feePaid;
-    const matchesBatch =
-      batchFilter === "all" ? true : student.batch === batchFilter;
 
-    return (
-      matchesSearch &&
-      matchesSubject &&
-      matchesCourse &&
-      matchesFeeStatus &&
-      matchesBatch
-    );
+    return matchesSearch && matchesSubject && matchesCourse && matchesFeeStatus;
   });
+
+  // Get appropriate elective subjects based on course type
+  const getDepartmentalSubjects = () => {
+    if (!newStudent.courseType) return [];
+
+    if (newStudent.courseType === "SSC Science") {
+      return sscScienceSubjects;
+    } else if (newStudent.courseType === "SSC Humanities") {
+      return sscHumanitiesSubjects;
+    } else if (newStudent.courseType === "SSC Commerce") {
+      return sscCommerceSubjects;
+    } else if (newStudent.courseType === "HSC Science") {
+      return hscScienceSubjects;
+    } else if (newStudent.courseType === "HSC Humanities") {
+      return hscHumanitiesSubjects;
+    } else if (newStudent.courseType === "HSC Commerce") {
+      return hscCommerceSubjects;
+    }
+    return [];
+  };
 
   return (
     <div className="p-4 md:p-6">
@@ -303,7 +373,7 @@ const StudentsManagement = () => {
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative flex justify-end">
             <div className="absolute inset-y-0 left-0 pl-3  flex items-center pointer-events-none">
@@ -373,34 +443,11 @@ const StudentsManagement = () => {
                 onChange={(e) => setSelectedSubjectFilter(e.target.value)}
               >
                 <option value="">All Subjects</option>
-                <optgroup label="Core Subjects">
-                  {coreSubjects.map((subject) => (
-                    <option key={subject} value={subject}>
-                      {subject}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Science">
-                  {scienceSubjects.map((subject) => (
-                    <option key={subject} value={subject}>
-                      {subject}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Humanities">
-                  {humanitiesSubjects.map((subject) => (
-                    <option key={subject} value={subject}>
-                      {subject}
-                    </option>
-                  ))}
-                </optgroup>
-                <optgroup label="Commerce">
-                  {commerceSubjects.map((subject) => (
-                    <option key={subject} value={subject}>
-                      {subject}
-                    </option>
-                  ))}
-                </optgroup>
+                {allSubjects.map((subject) => (
+                  <option key={subject} value={subject}>
+                    {subject}
+                  </option>
+                ))}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                 <svg
@@ -424,39 +471,6 @@ const StudentsManagement = () => {
                   <X className="w-4 h-4" />
                 </button>
               )}
-            </div>
-          </div>
-
-          {/* Batch */}
-          <div>
-            <label className="block text-sm font-medium text-blue-800 mb-1">
-              Batch
-            </label>
-            <div className="relative">
-              <select
-                className="block w-full pl-3 pr-8 py-2 text-base border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 rounded-lg bg-white shadow-sm transition-all appearance-none"
-                value={batchFilter}
-                onChange={(e) => setBatchFilter(e.target.value)}
-              >
-                <option value="all">All Batches</option>
-                <option value="Morning">Morning</option>
-                <option value="Evening">Evening</option>
-                <option value="Weekend">Weekend</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                <svg
-                  className="h-5 w-5 text-blue-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
             </div>
           </div>
 
@@ -592,40 +606,6 @@ const StudentsManagement = () => {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Batch
-              </label>
-              <select
-                className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                value={newStudent.batch}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, batch: e.target.value })
-                }
-              >
-                <option value="Morning">Morning</option>
-                <option value="Evening">Evening</option>
-                <option value="Weekend">Weekend</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address
-              </label>
-              <input
-                type="text"
-                className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                value={newStudent.address}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, address: e.target.value })
-                }
-                placeholder="Enter student's address"
-              />
-            </div>
-
             <div className="flex items-center justify-center">
               <div className="flex items-center h-full">
                 <input
@@ -647,6 +627,21 @@ const StudentsManagement = () => {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Address
+            </label>
+            <input
+              type="text"
+              className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              value={newStudent.address}
+              onChange={(e) =>
+                setNewStudent({ ...newStudent, address: e.target.value })
+              }
+              placeholder="Enter student's address"
+            />
+          </div>
+
           {/* Subjects Selection */}
           <div className="pt-2">
             <div className="flex justify-between items-center mb-2">
@@ -654,98 +649,68 @@ const StudentsManagement = () => {
                 Subjects*
               </label>
               <div className="text-xs text-gray-500">
-                Selected: {newStudent.subjects.length}/4
+                Selected Electives: {newStudent.subjects.length}/4
                 {maxSubjectsSelected && (
                   <span className="ml-2 text-orange-600 flex items-center">
                     <AlertCircle className="w-3 h-3 mr-1" />
-                    Maximum subjects selected
+                    Maximum electives selected
                   </span>
                 )}
               </div>
             </div>
 
+            {/* Core Subjects (Display only) */}
             <div className="mb-4 bg-blue-50 p-3 rounded-lg">
               <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <BookOpen className="w-4 h-4 mr-1 text-blue-600" /> Core
                 Subjects (Mandatory)
               </h4>
               <div className="flex flex-wrap gap-2">
-                {coreSubjects.map((subject) => (
-                  <button
-                    key={subject}
-                    type="button"
-                    className={`px-3 py-1 rounded-full text-sm flex items-center transition-all ${
-                      newStudent.subjects.includes(subject)
-                        ? "bg-blue-100 text-blue-800 border border-blue-300 shadow-inner"
-                        : "bg-white text-gray-800 border border-gray-300 hover:bg-gray-50"
-                    }`}
-                    onClick={() => toggleSubject(subject)}
-                  >
-                    {subject}
-                    {newStudent.subjects.includes(subject) && (
-                      <Check className="w-3 h-3 ml-1" />
-                    )}
-                  </button>
-                ))}
+                {newStudent.courseType.includes("SSC")
+                  ? sscCoreSubjects.map((subject) => (
+                      <span
+                        key={subject}
+                        className="px-3 py-1 rounded-full text-sm flex items-center bg-blue-100 text-blue-800 border border-blue-300 shadow-inner"
+                      >
+                        {subject}
+                      </span>
+                    ))
+                  : newStudent.courseType.includes("HSC")
+                  ? hscCoreSubjects.map((subject) => (
+                      <span
+                        key={subject}
+                        className="px-3 py-1 rounded-full text-sm flex items-center bg-blue-100 text-blue-800 border border-blue-300 shadow-inner"
+                      >
+                        {subject}
+                      </span>
+                    ))
+                  : null}
               </div>
             </div>
 
+            {/* Departmental Subjects */}
             {newStudent.courseType && (
               <>
-                {newStudent.courseType.includes("HSC") && (
+                {(newStudent.courseType.includes("SSC") ||
+                  newStudent.courseType.includes("HSC")) && (
                   <div className="mb-4 bg-blue-50 p-3 rounded-lg">
                     <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                       <BookOpen className="w-4 h-4 mr-1 text-blue-600" />
+                      {newStudent.courseType === "SSC Science" &&
+                        "SSC Science Electives"}
+                      {newStudent.courseType === "SSC Humanities" &&
+                        "SSC Humanities Electives"}
+                      {newStudent.courseType === "SSC Commerce" &&
+                        "SSC Commerce Electives"}
                       {newStudent.courseType === "HSC Science" &&
-                        "Science Subjects"}
+                        "HSC Science Electives"}
                       {newStudent.courseType === "HSC Humanities" &&
-                        "Humanities Subjects"}
+                        "HSC Humanities Electives"}
                       {newStudent.courseType === "HSC Commerce" &&
-                        "Commerce Subjects"}
+                        "HSC Commerce Electives"}
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {(newStudent.courseType === "HSC Science"
-                        ? scienceSubjects
-                        : newStudent.courseType === "HSC Humanities"
-                        ? humanitiesSubjects
-                        : commerceSubjects
-                      ).map((subject) => (
-                        <button
-                          key={subject}
-                          type="button"
-                          className={`px-3 py-1 rounded-full text-sm flex items-center transition-all ${
-                            newStudent.subjects.includes(subject)
-                              ? "bg-blue-100 text-blue-800 border border-blue-300 shadow-inner"
-                              : maxSubjectsSelected
-                              ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
-                              : "bg-white text-gray-800 border border-gray-300 hover:bg-gray-50"
-                          }`}
-                          onClick={() =>
-                            !maxSubjectsSelected && toggleSubject(subject)
-                          }
-                          disabled={
-                            maxSubjectsSelected &&
-                            !newStudent.subjects.includes(subject)
-                          }
-                        >
-                          {subject}
-                          {newStudent.subjects.includes(subject) && (
-                            <Check className="w-3 h-3 ml-1" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {newStudent.courseType.includes("Medical") && (
-                  <div className="mb-4 bg-blue-50 p-3 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                      <BookOpen className="w-4 h-4 mr-1 text-blue-600" />{" "}
-                      Medical Subjects
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {["Biology", "Chemistry", "Physics"].map((subject) => (
+                      {getDepartmentalSubjects().map((subject) => (
                         <button
                           key={subject}
                           type="button"
@@ -791,8 +756,9 @@ const StudentsManagement = () => {
               onClick={handleAddStudent}
               className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all"
               disabled={
-                newStudent.courseType.includes("HSC") &&
-                newStudent.subjects.length < 4
+                (newStudent.courseType.includes("SSC") ||
+                  newStudent.courseType.includes("HSC")) &&
+                newStudent.subjects.length < 1
               }
             >
               {editingId ? "Update Student" : "Save Student"}
@@ -804,123 +770,129 @@ const StudentsManagement = () => {
       {/* Students Cards */}
       {filteredStudents.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredStudents.map((student) => (
-            <div
-              key={student.id}
-              className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-200"
-            >
-              <div className="p-5">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800">
-                      {student.name}
-                    </h3>
-                    <p className="text-xs text-blue-600 font-medium">
-                      {student.id}
-                    </p>
-                  </div>
-                  <span
-                    className={`px-2 py-1 text-xs rounded-full flex items-center ${
-                      student.feePaid
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {student.feePaid ? (
-                      <>
-                        <Check className="w-3 h-3 mr-1" /> Paid
-                      </>
-                    ) : (
-                      <>
-                        <X className="w-3 h-3 mr-1" /> Unpaid
-                      </>
-                    )}
-                  </span>
-                </div>
+          {filteredStudents.map((student) => {
+            const displaySubjects = student.courseType.includes("SSC")
+              ? [...sscCoreSubjects, ...student.subjects]
+              : student.courseType.includes("HSC")
+              ? [...hscCoreSubjects, ...student.subjects]
+              : student.subjects;
 
-                <div className="space-y-3">
-                  <div className="flex items-center">
-                    <BookOpen className="w-4 h-4 text-gray-500 mr-2" />
-                    <span className="text-sm font-medium text-gray-700">
-                      {student.courseType}
+            return (
+              <div
+                key={student.id}
+                className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-200"
+              >
+                <div className="p-5">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800">
+                        {student.name}
+                      </h3>
+                      <p className="text-xs text-blue-600 font-medium">
+                        {student.id}
+                      </p>
+                    </div>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full flex items-center ${
+                        student.feePaid
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {student.feePaid ? (
+                        <>
+                          <Check className="w-3 h-3 mr-1" /> Paid
+                        </>
+                      ) : (
+                        <>
+                          <X className="w-3 h-3 mr-1" /> Unpaid
+                        </>
+                      )}
                     </span>
                   </div>
 
-                  <div className="flex items-center">
-                    <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-                    <span className="text-sm text-gray-600">
-                      Joined: {student.joinDate}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center">
-                    <User className="w-4 h-4 text-gray-500 mr-2" />
-                    <span className="text-sm text-gray-600">
-                      Batch: {student.batch}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center">
-                    <Phone className="w-4 h-4 text-gray-500 mr-2" />
-                    <span className="text-sm text-gray-600">
-                      {student.contact}
-                    </span>
-                  </div>
-
-                  {student.parentContact && (
+                  <div className="space-y-3">
                     <div className="flex items-center">
-                      <User className="w-4 h-4 text-gray-500 mr-2" />
-                      <span className="text-sm text-gray-600">
-                        Parent: {student.parentContact}
+                      <BookOpen className="w-4 h-4 text-gray-500 mr-2" />
+                      <span className="text-sm font-medium text-gray-700">
+                        {student.courseType}
                       </span>
                     </div>
-                  )}
 
-                  {student.address && (
-                    <div className="flex items-start">
-                      <Home className="w-4 h-4 text-gray-500 mr-2 mt-0.5" />
+                    <div className="flex items-center">
+                      <Calendar className="w-4 h-4 text-gray-500 mr-2" />
                       <span className="text-sm text-gray-600">
-                        {student.address}
+                        Joined: {student.joinDate}
                       </span>
                     </div>
-                  )}
-                </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
-                    <BookOpen className="w-3 h-3 mr-1" /> Subjects
-                  </h4>
-                  <div className="flex flex-wrap gap-1">
-                    {student.subjects.map((subject) => (
-                      <span
-                        key={subject}
-                        className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full flex items-center"
-                      >
-                        {subject}
+                    <div className="flex items-center">
+                      <Phone className="w-4 h-4 text-gray-500 mr-2" />
+                      <span className="text-sm text-gray-600">
+                        {student.contact}
                       </span>
-                    ))}
+                    </div>
+
+                    {student.parentContact && (
+                      <div className="flex items-center">
+                        <User className="w-4 h-4 text-gray-500 mr-2" />
+                        <span className="text-sm text-gray-600">
+                          Parent: {student.parentContact}
+                        </span>
+                      </div>
+                    )}
+
+                    {student.address && (
+                      <div className="flex items-start">
+                        <Home className="w-4 h-4 text-gray-500 mr-2 mt-0.5" />
+                        <span className="text-sm text-gray-600">
+                          {student.address}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end space-x-2">
-                  <button
-                    onClick={() => handleEdit(student)}
-                    className="p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-full transition-colors"
-                    title="Edit"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(student.id)}
-                    className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-full transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
+                      <BookOpen className="w-3 h-3 mr-1" /> Subjects
+                    </h4>
+                    <div className="flex flex-wrap gap-1">
+                      {displaySubjects.map((subject, index) => (
+                        <span
+                          key={index}
+                          className={`px-2 py-1 text-xs rounded-full flex items-center ${
+                            sscCoreSubjects.includes(subject) ||
+                            hscCoreSubjects.includes(subject)
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {subject}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end space-x-2">
+                    <button
+                      onClick={() => handleEdit(student)}
+                      className="p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-full transition-colors"
+                      title="Edit"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(student.id)}
+                      className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-full transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="bg-white rounded-xl shadow p-8 text-center border border-gray-100">
@@ -937,7 +909,6 @@ const StudentsManagement = () => {
               setSelectedSubjectFilter("");
               setSelectedCourseFilter("");
               setFeeStatusFilter("all");
-              setBatchFilter("all");
             }}
             className="mt-4 text-sm text-blue-600 hover:text-blue-800 font-medium"
           >

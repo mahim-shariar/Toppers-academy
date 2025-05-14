@@ -22,6 +22,8 @@ const TeachersManagement = () => {
       qualification: "PhD in Physics, BUET",
       experience: "12 years teaching experience",
       bio: "Specialized in modern physics and quantum mechanics. Has trained 5 national Olympiad winners.",
+      teachingPhilosophy:
+        "Focus on conceptual understanding rather than rote memorization. Encourage curiosity and critical thinking.",
       image: "https://randomuser.me/api/portraits/women/44.jpg",
       contact: "01712345678",
       email: "ayesha@example.com",
@@ -33,6 +35,8 @@ const TeachersManagement = () => {
       qualification: "MSc in Applied Mathematics, DU",
       experience: "8 years teaching experience",
       bio: "Expert in calculus and algebra. Developed unique problem-solving techniques for competitive exams.",
+      teachingPhilosophy:
+        "Mathematics is a language that should be made accessible to all students through practical applications.",
       image: "https://randomuser.me/api/portraits/men/32.jpg",
       contact: "01787654321",
       email: "farhan@example.com",
@@ -44,6 +48,8 @@ const TeachersManagement = () => {
       qualification: "MSc in Chemistry, RU",
       experience: "10 years teaching experience",
       bio: "Specializes in organic chemistry and chemical bonding. Makes complex concepts easy to understand.",
+      teachingPhilosophy:
+        "Learning should be interactive and experimental. Students learn best by doing.",
       image: "https://randomuser.me/api/portraits/women/68.jpg",
       contact: "01812345678",
       email: "nusrat@example.com",
@@ -55,6 +61,8 @@ const TeachersManagement = () => {
       qualification: "MBBS, Dhaka Medical College",
       experience: "7 years teaching experience",
       bio: "Medical doctor who teaches biology with clinical correlations. Focuses on conceptual understanding.",
+      teachingPhilosophy:
+        "Connect biological concepts to real-world medical cases to make learning relevant.",
       image: "https://randomuser.me/api/portraits/men/75.jpg",
       contact: "01912345678",
       email: "rahim@example.com",
@@ -67,6 +75,7 @@ const TeachersManagement = () => {
     qualification: "",
     experience: "",
     bio: "",
+    teachingPhilosophy: "",
     image: "",
     contact: "",
     email: "",
@@ -114,6 +123,7 @@ const TeachersManagement = () => {
       qualification: "",
       experience: "",
       bio: "",
+      teachingPhilosophy: "",
       image: "",
       contact: "",
       email: "",
@@ -363,6 +373,24 @@ const TeachersManagement = () => {
                 setNewTeacher({ ...newTeacher, bio: e.target.value })
               }
               placeholder="Enter teacher's bio"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Teaching Philosophy
+            </label>
+            <textarea
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              rows="3"
+              value={newTeacher.teachingPhilosophy}
+              onChange={(e) =>
+                setNewTeacher({
+                  ...newTeacher,
+                  teachingPhilosophy: e.target.value,
+                })
+              }
+              placeholder="Enter teacher's teaching philosophy"
             />
           </div>
 

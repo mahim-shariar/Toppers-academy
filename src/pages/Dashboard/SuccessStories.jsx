@@ -91,38 +91,6 @@ const SuccessStories = () => {
       category: "public",
     },
     {
-      id: 3,
-      studentName: "Karim Ahmed",
-      achievement: "Scholarship at NSU",
-      year: "2023",
-      description:
-        "Received 100% scholarship at North South University for outstanding results.",
-      image:
-        "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&auto=format&fit=crop&q=60",
-      batch: "University Admission 2023",
-      quote:
-        "I couldn't have cracked the admission test without their guidance.",
-      university: "North South University",
-      result: "100% Scholarship",
-      category: "private",
-    },
-    {
-      id: 4,
-      studentName: "Ayesha Siddiqua",
-      achievement: "Admitted to Dhaka University",
-      year: "2023",
-      description:
-        "Got admitted to Dhaka University Economics Department with excellent results.",
-      image:
-        "https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=600&auto=format&fit=crop&q=60",
-      batch: "HSC Batch 2023",
-      quote:
-        "The guidance from Toppers Academy was invaluable for my admission test.",
-      university: "University of Dhaka (DU)",
-      result: "GPA 5.0",
-      category: "public",
-    },
-    {
       id: 5,
       studentName: "Tasnim Rahman",
       achievement: "Nursing College Admission",
@@ -145,7 +113,6 @@ const SuccessStories = () => {
     { id: 2, category: "medical", count: 78, percentage: "20%" },
     { id: 3, category: "gst", count: 42, percentage: "11%" },
     { id: 4, category: "nursing", count: 35, percentage: "9%" },
-    { id: 5, category: "private", count: 110, percentage: "28%" },
   ]);
 
   const [newStory, setNewStory] = useState({
@@ -178,6 +145,14 @@ const SuccessStories = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedUniversity, setSelectedUniversity] = useState("all");
   const fileInputRef = useRef(null);
+
+  // Get all universities as a single array for dropdown
+  const allUniversities = [
+    ...universities.public,
+    ...universities.medical,
+    ...universities.gst,
+    ...universities.nursing,
+  ];
 
   // Filtered stories based on search and filters
   const filteredStories = stories.filter((story) => {
@@ -367,7 +342,6 @@ const SuccessStories = () => {
             <option value="medical">Medical Colleges</option>
             <option value="gst">GST</option>
             <option value="nursing">Nursing</option>
-            <option value="private">Private Universities</option>
           </select>
         </div>
         <div>
@@ -430,7 +404,7 @@ const SuccessStories = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-blue-50 p-4 rounded-lg">
             <p className="text-2xl font-bold text-blue-600">{totalStudents}</p>
             <p className="text-sm text-gray-600">Total Students</p>
@@ -751,32 +725,41 @@ const SuccessStories = () => {
                     <option value="medical">Medical College</option>
                     <option value="gst">GST</option>
                     <option value="nursing">Nursing</option>
-                    <option value="private">Private University</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     University/College*
                   </label>
-                  <input
-                    type="text"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    value={
-                      isEditing ? currentStory.university : newStory.university
-                    }
-                    onChange={(e) =>
-                      isEditing
-                        ? setCurrentStory({
-                            ...currentStory,
-                            university: e.target.value,
-                          })
-                        : setNewStory({
-                            ...newStory,
-                            university: e.target.value,
-                          })
-                    }
-                    placeholder="Name of institution"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      list="universities-list"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      value={
+                        isEditing
+                          ? currentStory.university
+                          : newStory.university
+                      }
+                      onChange={(e) =>
+                        isEditing
+                          ? setCurrentStory({
+                              ...currentStory,
+                              university: e.target.value,
+                            })
+                          : setNewStory({
+                              ...newStory,
+                              university: e.target.value,
+                            })
+                      }
+                      placeholder="Select or type a new university name"
+                    />
+                    <datalist id="universities-list">
+                      {allUniversities.map((uni, index) => (
+                        <option key={`uni-${index}`} value={uni} />
+                      ))}
+                    </datalist>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -903,7 +886,6 @@ const SuccessStories = () => {
                     <option value="medical">Medical College</option>
                     <option value="gst">GST</option>
                     <option value="nursing">Nursing</option>
-                    <option value="private">Private University</option>
                   </select>
                 </div>
                 <div>

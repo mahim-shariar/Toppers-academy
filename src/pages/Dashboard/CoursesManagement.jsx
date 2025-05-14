@@ -70,7 +70,6 @@ const CoursesManagement = () => {
     imageUrl: "",
     duration: "",
     level: "",
-    category: "",
     programType: "",
     deliveryMode: "",
     price: "",
@@ -83,7 +82,6 @@ const CoursesManagement = () => {
   });
 
   const [currentSyllabusItem, setCurrentSyllabusItem] = useState("");
-  const [currentRequirement, setCurrentRequirement] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -285,23 +283,6 @@ const CoursesManagement = () => {
     setNewCourse({
       ...newCourse,
       syllabus: newCourse.syllabus.filter((_, i) => i !== index),
-    });
-  };
-
-  const addRequirement = () => {
-    if (currentRequirement) {
-      setNewCourse({
-        ...newCourse,
-        requirements: [...newCourse.requirements, currentRequirement],
-      });
-      setCurrentRequirement("");
-    }
-  };
-
-  const removeRequirement = (index) => {
-    setNewCourse({
-      ...newCourse,
-      requirements: newCourse.requirements.filter((_, i) => i !== index),
     });
   };
 
@@ -763,25 +744,7 @@ const CoursesManagement = () => {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category*
-                  </label>
-                  <select
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    value={newCourse.category}
-                    onChange={(e) =>
-                      setNewCourse({ ...newCourse, category: e.target.value })
-                    }
-                  >
-                    <option value="">Select Category</option>
-                    <option value="Academic">Academic</option>
-                    <option value="Professional">Professional</option>
-                    <option value="Competitive">Competitive</option>
-                  </select>
-                </div>
-
+              <div className="grid  gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Program Type
