@@ -1,4 +1,3 @@
-// src/pages/Dashboard/CoursesManagement.jsx
 import {
   BookOpen,
   Plus,
@@ -14,7 +13,7 @@ import {
   ChevronDown,
   Check,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
@@ -26,6 +25,393 @@ import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
 import FontSize from "@tiptap/extension-font-size";
 import Modal from "../../components/Modal";
+
+const EditorMenuBar = ({ editor }) => {
+  if (!editor) {
+    return null;
+  }
+
+  const textSizes = [
+    { label: "Small", value: "12px" },
+    { label: "Normal", value: "14px" },
+    { label: "Large", value: "16px" },
+    { label: "Extra Large", value: "18px" },
+    { label: "Huge", value: "20px" },
+  ];
+
+  const textColors = [
+    { name: "Black", value: "#000000" },
+    { name: "Gray", value: "#4B5563" },
+    { name: "Red", value: "#EF4444" },
+    { name: "Blue", value: "#3B82F6" },
+    { name: "Green", value: "#10B981" },
+    { name: "Yellow", value: "#F59E0B" },
+    { name: "Purple", value: "#8B5CF6" },
+    { name: "Pink", value: "#EC4899" },
+  ];
+
+  const ToolbarButton = ({ onClick, active, children, title }) => (
+    <button
+      type="button"
+      onMouseDown={(e) => {
+        e.preventDefault();
+        onClick();
+        editor.commands.focus();
+      }}
+      onClick={(e) => e.preventDefault()}
+      className={`p-2 rounded transition-all duration-150 ${
+        active
+          ? "bg-blue-100 text-blue-600 shadow-inner"
+          : "text-gray-700 hover:bg-gray-100"
+      }`}
+      title={title}
+    >
+      {children}
+    </button>
+  );
+
+  const ToolbarDropdown = ({ icon, label, children }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (
+          dropdownRef.current &&
+          !dropdownRef.current.contains(event.target)
+        ) {
+          setIsOpen(false);
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, []);
+
+    return (
+      <div className="relative" ref={dropdownRef}>
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            setIsOpen(!isOpen);
+            editor.commands.focus();
+          }}
+          onClick={(e) => e.preventDefault()}
+          className={`flex items-center gap-1 p-2 rounded transition-all duration-150 ${
+            isOpen
+              ? "bg-blue-100 text-blue-600"
+              : "text-gray-700 hover:bg-gray-100"
+          }`}
+        >
+          {icon}
+          <span className="text-xs">{label}</span>
+          <ChevronDown
+            className={`w-3 h-3 transition-transform ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+        {isOpen && (
+          <div
+            className="absolute z-20 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-2 min-w-[180px]"
+            onMouseLeave={() => setIsOpen(false)}
+          >
+            {children}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 bg-gray-50 rounded-t-lg sticky top-0 z-10">
+      {/* Text Formatting */}
+      <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-md">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          active={editor.isActive("bold")}
+          title="Bold (Ctrl+B)"
+        >
+          <span className="font-bold text-sm">B</span>
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          active={editor.isActive("italic")}
+          title="Italic (Ctrl+I)"
+        >
+          <span className="italic text-sm">I</span>
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          active={editor.isActive("underline")}
+          title="Underline (Ctrl+U)"
+        >
+          <span className="underline text-sm">U</span>
+        </ToolbarButton>
+      </div>
+
+      {/* Text Size */}
+      <ToolbarDropdown
+        icon={
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            className="text-gray-700"
+          >
+            <path fill="none" d="M0 0h24v24H0z" />
+            <path d="M12 6v15h-2v-5H6v5H4V6h8zm-2 2H8v5h2V8zm10 11v-3h-5v-1h6v5h-1zm-1-8v-1h-7v1h7zm-9-2V3h-2v6H7V3H5v6H2v2h10v-2h-1z" />
+          </svg>
+        }
+        label="Size"
+      >
+        <div className="space-y-1">
+          {textSizes.map((size) => (
+            <button
+              key={size.value}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                editor.chain().focus().setFontSize(size.value).run();
+              }}
+              onClick={(e) => e.preventDefault()}
+              className={`w-full text-left px-3 py-1.5 text-xs rounded hover:bg-blue-50 transition-colors ${
+                editor.isActive("textStyle", { fontSize: size.value })
+                  ? "bg-blue-100 text-blue-600 font-medium"
+                  : "text-gray-700"
+              }`}
+              style={{ fontSize: size.value }}
+            >
+              {size.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              editor.chain().focus().unsetFontSize().run();
+            }}
+            onClick={(e) => e.preventDefault()}
+            className="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded transition-colors mt-1"
+          >
+            Reset size
+          </button>
+        </div>
+      </ToolbarDropdown>
+
+      {/* Text Color */}
+      <ToolbarDropdown
+        icon={
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            className="text-gray-700"
+          >
+            <path fill="none" d="M0 0h24v24H0z" />
+            <path d="M15.246 14H8.754l-1.6 4H5l6-15h2l6 15h-2.154l-1.6-4zm-.8-2L12 5.885 9.554 12h4.892z" />
+          </svg>
+        }
+        label="Color"
+      >
+        <div className="space-y-2">
+          <div className="grid grid-cols-5 gap-2 p-2">
+            {textColors.map((color) => (
+              <button
+                key={color.value}
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  editor.chain().focus().setColor(color.value).run();
+                }}
+                onClick={(e) => e.preventDefault()}
+                className="w-6 h-6 rounded border border-gray-200 hover:ring-2 hover:ring-gray-300 transition-all"
+                style={{ backgroundColor: color.value }}
+                title={color.name}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              editor.chain().focus().unsetColor().run();
+            }}
+            onClick={(e) => e.preventDefault()}
+            className="w-full text-left px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded transition-colors"
+          >
+            Reset color
+          </button>
+        </div>
+      </ToolbarDropdown>
+
+      {/* Headings */}
+      <select
+        value={editor.getAttributes("heading").level || "paragraph"}
+        onChange={(e) => {
+          const level = e.target.value;
+          if (level === "paragraph") {
+            editor.chain().focus().setParagraph().run();
+          } else {
+            editor
+              .chain()
+              .focus()
+              .toggleHeading({ level: parseInt(level) })
+              .run();
+          }
+        }}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          editor.commands.focus();
+        }}
+        className="p-1.5 border rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
+      >
+        <option value="paragraph">Normal text</option>
+        <option value="1">Heading 1</option>
+        <option value="2">Heading 2</option>
+        <option value="3">Heading 3</option>
+      </select>
+
+      {/* Lists */}
+      <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-md">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          active={editor.isActive("bulletList")}
+          title="Bullet List"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            className="text-gray-700"
+          >
+            <path fill="none" d="M0 0h24v24H0z" />
+            <path d="M8 4h13v2H8V4zM4.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm0 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm0 6.9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM8 11h13v2H8v-2zm0 7h13v2H8v-2z" />
+          </svg>
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          active={editor.isActive("orderedList")}
+          title="Numbered List"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            className="text-gray-700"
+          >
+            <path fill="none" d="M0 0h24v24H0z" />
+            <path d="M8 4h13v2H8V4zM5 3v3h1v1H3V6h1V4H3V3h2zM3 14v-2.5h2V11H3v-1h3v2.5H4v.5h2v1H3zm2 5.5H3v-1h2V18H3v-1h3v4H3v-1h2v-.5zM8 11h13v2H8v-2zm0 7h13v2H8v-2z" />
+          </svg>
+        </ToolbarButton>
+      </div>
+
+      {/* Text Alignment */}
+      <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-md">
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          active={editor.isActive({ textAlign: "left" })}
+          title="Align Left"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            className="text-gray-700"
+          >
+            <path fill="none" d="M0 0h24v24H0z" />
+            <path d="M3 4h18v2H3V4zm0 15h14v2H3v-2zm0-5h18v2H3v-2zm0-5h14v2H3V9z" />
+          </svg>
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("center").run()}
+          active={editor.isActive({ textAlign: "center" })}
+          title="Align Center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            className="text-gray-700"
+          >
+            <path fill="none" d="M0 0h24v24H0z" />
+            <path d="M3 4h18v2H3V4zm2 15h14v2H5v-2zm-2-5h18v2H3v-2zm2-5h14v2H5V9z" />
+          </svg>
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("right").run()}
+          active={editor.isActive({ textAlign: "right" })}
+          title="Align Right"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            className="text-gray-700"
+          >
+            <path fill="none" d="M0 0h24v24H0z" />
+            <path d="M3 4h18v2H3V4zm4 15h14v2H7v-2zm-4-5h18v2H3v-2zm4-5h14v2H7V9z" />
+          </svg>
+        </ToolbarButton>
+      </div>
+
+      {/* Links */}
+      <ToolbarButton
+        onClick={() => {
+          const previousUrl = editor.getAttributes("link").href;
+          const url = window.prompt("URL", previousUrl);
+
+          if (url === null) return;
+          if (url === "") {
+            editor.chain().focus().extendMarkRange("link").unsetLink().run();
+            return;
+          }
+
+          editor
+            .chain()
+            .focus()
+            .extendMarkRange("link")
+            .setLink({ href: url })
+            .run();
+        }}
+        active={editor.isActive("link")}
+        title="Link (Ctrl+K)"
+      >
+        <LinkIcon className="w-4 h-4" />
+      </ToolbarButton>
+
+      {/* Clear Formatting */}
+      <ToolbarButton
+        onClick={() => {
+          editor.chain().focus().clearNodes().unsetAllMarks().run();
+          editor.chain().focus().unsetFontSize().unsetColor().run();
+        }}
+        title="Clear Formatting"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="16"
+          height="16"
+          className="text-gray-700"
+        >
+          <path fill="none" d="M0 0h24v24H0z" />
+          <path d="M12.651 14.065L11.605 20H9.574l1.35-7.661-7.41-7.41L4.93 3.515 20.485 19.07l-1.414 1.414-6.42-6.42zm-.878-6.535l.27-1.53h-1.8l-2-2H20v2h-5.927L13.5 9.257 11.773 7.53z" />
+        </svg>
+      </ToolbarButton>
+    </div>
+  );
+};
 
 const CoursesManagement = () => {
   // Sample data
@@ -46,6 +432,7 @@ const CoursesManagement = () => {
       students: "24 Students",
       level: "Advanced",
       category: "Academic",
+      courseCategory: "morning",
       programType: "HSC",
       deliveryMode: "Offline",
       price: 299,
@@ -64,6 +451,29 @@ const CoursesManagement = () => {
         { name: "Syllabus.pdf", url: "https://example.com/syllabus.pdf" },
       ],
     },
+    {
+      id: 2,
+      title: "Physics for Engineers",
+      description: "Fundamentals of physics for engineering students...",
+      longDescription: "<p>Comprehensive physics course...</p>",
+      imageUrl: "https://example.com/physics.jpg",
+      duration: "10 Weeks",
+      students: "18 Students",
+      level: "Intermediate",
+      category: "Academic",
+      courseCategory: "evening",
+      programType: "Engineering",
+      deliveryMode: "Online",
+      price: 249,
+      startDate: "2024-02-01",
+      schedule: "Tue & Thu, 7:00 PM - 9:00 PM",
+      instructorId: 2,
+      syllabus: ["Week 1-2: Mechanics", "Week 3-4: Thermodynamics"],
+      requirements: ["Basic knowledge of physics", "Scientific calculator"],
+      documents: [
+        { name: "Course Outline.pdf", url: "https://example.com/outline.pdf" },
+      ],
+    },
   ]);
 
   const [newCourse, setNewCourse] = useState({
@@ -74,6 +484,7 @@ const CoursesManagement = () => {
     duration: "",
     level: "",
     programType: "",
+    courseCategory: "",
     deliveryMode: "",
     price: "",
     startDate: "",
@@ -140,6 +551,13 @@ const CoursesManagement = () => {
         class:
           "prose prose-sm max-w-none focus:outline-none p-4 min-h-[300px] max-h-[500px] overflow-y-auto",
       },
+      handleDOMEvents: {
+        mousedown: (view, event) => {
+          if (!view.hasFocus()) {
+            view.focus();
+          }
+        },
+      },
     },
   });
 
@@ -158,7 +576,8 @@ const CoursesManagement = () => {
         .find((t) => t.id === course.instructorId)
         ?.name.toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      course.programType.toLowerCase().includes(searchTerm.toLowerCase())
+      course.programType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      course.courseCategory.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddCourse = () => {
@@ -202,6 +621,7 @@ const CoursesManagement = () => {
       duration: "",
       level: "",
       programType: "",
+      courseCategory: "",
       deliveryMode: "",
       price: "",
       startDate: "",
@@ -306,340 +726,6 @@ const CoursesManagement = () => {
       ...newCourse,
       syllabus: newCourse.syllabus.filter((_, i) => i !== index),
     });
-  };
-
-  // Enhanced Editor Menu Bar Component
-  const EditorMenuBar = ({ editor }) => {
-    if (!editor) {
-      return null;
-    }
-
-    const textSizes = [
-      { label: "Small", value: "12px" },
-      { label: "Normal", value: "14px" },
-      { label: "Large", value: "16px" },
-      { label: "Extra Large", value: "18px" },
-      { label: "Huge", value: "20px" },
-    ];
-
-    const textColors = [
-      "#000000",
-      "#4B5563",
-      "#EF4444",
-      "#3B82F6",
-      "#10B981",
-      "#F59E0B",
-      "#8B5CF6",
-      "#EC4899",
-    ];
-
-    const ToolbarButton = ({ onClick, active, children, title }) => (
-      <button
-        type="button" // Add type="button" to prevent form submission
-        onClick={(e) => {
-          e.preventDefault();
-          onClick();
-        }}
-        className={`p-2 rounded hover:bg-gray-100 transition-colors ${
-          active ? "bg-gray-100 text-blue-600" : "text-gray-700"
-        }`}
-        title={title}
-      >
-        {children}
-      </button>
-    );
-
-    const ToolbarDropdown = ({ icon, label, children }) => {
-      const [isOpen, setIsOpen] = useState(false);
-
-      return (
-        <div className="relative">
-          <button
-            type="button" // Add type="button" to prevent form submission
-            className="flex items-center gap-1 p-2 rounded hover:bg-gray-100 text-gray-700"
-            onClick={(e) => {
-              e.preventDefault();
-              setIsOpen(!isOpen);
-            }}
-          >
-            {icon}
-            <span className="text-xs">{label}</span>
-            <ChevronDown className="w-3 h-3" />
-          </button>
-          {isOpen && (
-            <div
-              className="absolute z-10 mt-1 bg-white rounded shadow-lg border border-gray-200 p-2 min-w-[150px]"
-              onMouseLeave={() => setIsOpen(false)}
-            >
-              {children}
-            </div>
-          )}
-        </div>
-      );
-    };
-
-    return (
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-gray-200 bg-gray-50 rounded-t-lg">
-        {/* Text Formatting */}
-        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-md">
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            active={editor.isActive("bold")}
-            title="Bold"
-          >
-            <span className="font-bold text-sm">B</span>
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            active={editor.isActive("italic")}
-            title="Italic"
-          >
-            <span className="italic text-sm">I</span>
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleUnderline().run()}
-            active={editor.isActive("underline")}
-            title="Underline"
-          >
-            <span className="underline text-sm">U</span>
-          </ToolbarButton>
-        </div>
-
-        {/* Text Size */}
-        <ToolbarDropdown
-          icon={
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              className="text-gray-700"
-            >
-              <path fill="none" d="M0 0h24v24H0z" />
-              <path d="M12 6v15h-2v-5H6v5H4V6h8zm-2 2H8v5h2V8zm10 11v-3h-5v-1h6v5h-1zm-1-8v-1h-7v1h7zm-9-2V3h-2v6H7V3H5v6H2v2h10v-2h-1z" />
-            </svg>
-          }
-          label="Size"
-        >
-          {textSizes.map((size) => (
-            <button
-              key={size.value}
-              type="button" // Add type="button" to prevent form submission
-              onClick={() =>
-                editor.chain().focus().setFontSize(size.value).run()
-              }
-              className={`w-full text-left px-2 py-1 text-xs hover:bg-gray-100 rounded ${
-                editor.isActive("textStyle", { fontSize: size.value })
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-gray-700"
-              }`}
-              style={{ fontSize: size.value }}
-            >
-              {size.label}
-            </button>
-          ))}
-          <button
-            type="button" // Add type="button" to prevent form submission
-            onClick={() => editor.chain().focus().unsetFontSize().run()}
-            className="mt-1 w-full text-left px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded"
-          >
-            Reset size
-          </button>
-        </ToolbarDropdown>
-
-        {/* Text Color */}
-        <ToolbarDropdown
-          icon={
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              className="text-gray-700"
-            >
-              <path fill="none" d="M0 0h24v24H0z" />
-              <path d="M15.246 14H8.754l-1.6 4H5l6-15h2l6 15h-2.154l-1.6-4zm-.8-2L12 5.885 9.554 12h4.892z" />
-            </svg>
-          }
-          label="Color"
-        >
-          <div className="grid grid-cols-5 gap-2 p-2">
-            {textColors.map((color) => (
-              <button
-                key={color}
-                type="button" // Add type="button" to prevent form submission
-                onClick={() => editor.chain().focus().setColor(color).run()}
-                className="w-6 h-6 rounded border border-gray-200 hover:ring-2 hover:ring-gray-300"
-                style={{ backgroundColor: color }}
-                title={color}
-              />
-            ))}
-          </div>
-          <button
-            type="button" // Add type="button" to prevent form submission
-            onClick={() => editor.chain().focus().unsetColor().run()}
-            className="mt-1 w-full text-left px-2 py-1 text-xs text-gray-600 hover:bg-gray-100 rounded"
-          >
-            Reset color
-          </button>
-        </ToolbarDropdown>
-
-        {/* Headings */}
-        <select
-          value={editor.getAttributes("heading").level || "paragraph"}
-          onChange={(e) => {
-            const level = e.target.value;
-            if (level === "paragraph") {
-              editor.chain().focus().setParagraph().run();
-            } else {
-              editor
-                .chain()
-                .focus()
-                .toggleHeading({ level: parseInt(level) })
-                .run();
-            }
-          }}
-          className="p-1 border rounded text-xs bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-          <option value="paragraph">Normal text</option>
-          <option value="1">Heading 1</option>
-          <option value="2">Heading 2</option>
-          <option value="3">Heading 3</option>
-        </select>
-
-        {/* Lists */}
-        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-md">
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            active={editor.isActive("bulletList")}
-            title="Bullet List"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              className="text-gray-700"
-            >
-              <path fill="none" d="M0 0h24v24H0z" />
-              <path d="M8 4h13v2H8V4zM4.5 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm0 7a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm0 6.9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM8 11h13v2H8v-2zm0 7h13v2H8v-2z" />
-            </svg>
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            active={editor.isActive("orderedList")}
-            title="Numbered List"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              className="text-gray-700"
-            >
-              <path fill="none" d="M0 0h24v24H0z" />
-              <path d="M8 4h13v2H8V4zM5 3v3h1v1H3V6h1V4H3V3h2zM3 14v-2.5h2V11H3v-1h3v2.5H4v.5h2v1H3zm2 5.5H3v-1h2V18H3v-1h3v4H3v-1h2v-.5zM8 11h13v2H8v-2zm0 7h13v2H8v-2z" />
-            </svg>
-          </ToolbarButton>
-        </div>
-
-        {/* Text Alignment */}
-        <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-md">
-          <ToolbarButton
-            onClick={() => editor.chain().focus().setTextAlign("left").run()}
-            active={editor.isActive({ textAlign: "left" })}
-            title="Align Left"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              className="text-gray-700"
-            >
-              <path fill="none" d="M0 0h24v24H0z" />
-              <path d="M3 4h18v2H3V4zm0 15h14v2H3v-2zm0-5h18v2H3v-2zm0-5h14v2H3V9z" />
-            </svg>
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().setTextAlign("center").run()}
-            active={editor.isActive({ textAlign: "center" })}
-            title="Align Center"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              className="text-gray-700"
-            >
-              <path fill="none" d="M0 0h24v24H0z" />
-              <path d="M3 4h18v2H3V4zm2 15h14v2H5v-2zm-2-5h18v2H3v-2zm2-5h14v2H5V9z" />
-            </svg>
-          </ToolbarButton>
-          <ToolbarButton
-            onClick={() => editor.chain().focus().setTextAlign("right").run()}
-            active={editor.isActive({ textAlign: "right" })}
-            title="Align Right"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              className="text-gray-700"
-            >
-              <path fill="none" d="M0 0h24v24H0z" />
-              <path d="M3 4h18v2H3V4zm4 15h14v2H7v-2zm-4-5h18v2H3v-2zm4-5h14v2H7V9z" />
-            </svg>
-          </ToolbarButton>
-        </div>
-
-        {/* Links */}
-        <ToolbarButton
-          onClick={() => {
-            const previousUrl = editor.getAttributes("link").href;
-            const url = window.prompt("URL", previousUrl);
-
-            if (url === null) return;
-            if (url === "") {
-              editor.chain().focus().extendMarkRange("link").unsetLink().run();
-              return;
-            }
-
-            editor
-              .chain()
-              .focus()
-              .extendMarkRange("link")
-              .setLink({ href: url })
-              .run();
-          }}
-          active={editor.isActive("link")}
-          title="Link"
-        >
-          <LinkIcon className="w-4 h-4" />
-        </ToolbarButton>
-
-        {/* Clear Formatting */}
-        <ToolbarButton
-          onClick={() =>
-            editor.chain().focus().clearNodes().unsetAllMarks().run()
-          }
-          title="Clear Formatting"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="16"
-            height="16"
-            className="text-gray-700"
-          >
-            <path fill="none" d="M0 0h24v24H0z" />
-            <path d="M12.651 14.065L11.605 20H9.574l1.35-7.661-7.41-7.41L4.93 3.515 20.485 19.07l-1.414 1.414-6.42-6.42zm-.878-6.535l.27-1.53h-1.8l-2-2H20v2h-5.927L13.5 9.257 11.773 7.53z" />
-          </svg>
-        </ToolbarButton>
-      </div>
-    );
   };
 
   return (
@@ -807,10 +893,6 @@ const CoursesManagement = () => {
                         className="min-h-[300px] max-h-[500px] overflow-y-auto p-4 focus:outline-none"
                       />
                     </div>
-                    <div className="px-4 py-2 text-xs text-gray-500 border-t bg-gray-50">
-                      {editor?.storage.characterCount.characters()}/{10000}{" "}
-                      characters
-                    </div>
                   </div>
                 </div>
 
@@ -828,23 +910,6 @@ const CoursesManagement = () => {
                       }
                       placeholder="e.g. 12 Weeks"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Level
-                    </label>
-                    <select
-                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm"
-                      value={newCourse.level}
-                      onChange={(e) =>
-                        setNewCourse({ ...newCourse, level: e.target.value })
-                      }
-                    >
-                      <option value="">Select Level</option>
-                      <option value="Beginner">Beginner</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Advanced">Advanced</option>
-                    </select>
                   </div>
                 </div>
               </div>
@@ -935,25 +1000,25 @@ const CoursesManagement = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Delivery Mode
+                      Course Time
                     </label>
                     <select
                       className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm"
-                      value={newCourse.deliveryMode}
+                      value={newCourse.courseCategory}
                       onChange={(e) =>
                         setNewCourse({
                           ...newCourse,
-                          deliveryMode: e.target.value,
+                          courseCategory: e.target.value,
                         })
                       }
                     >
-                      <option value="">Select Mode</option>
-                      <option value="Online">Online</option>
-                      <option value="Offline">Offline</option>
-                      <option value="Hybrid">Hybrid</option>
+                      <option value="">Select Time</option>
+                      <option value="morning">Morning</option>
+                      <option value="afternoon">Afternoon</option>
+                      <option value="evening">Evening</option>
+                      <option value="weekend">Weekend</option>
                     </select>
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Price ($)
@@ -1056,27 +1121,6 @@ const CoursesManagement = () => {
                   </div>
                 </div>
               </div>
-
-              {/* File upload section */}
-              <label className="flex flex-col items-center justify-center w-full p-4 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 mb-4 transition-colors duration-200">
-                <div className="flex flex-col items-center justify-center">
-                  <Upload className="w-8 h-8 text-gray-500 mb-2" />
-                  <p className="text-sm text-gray-500 text-center">
-                    <span className="font-semibold">Click to upload</span> or
-                    drag and drop
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    PDF, DOC, PPT (MAX. 10MB)
-                  </p>
-                </div>
-                <input
-                  id="dropzone-file"
-                  type="file"
-                  className="hidden"
-                  multiple
-                  onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
-                />
-              </label>
 
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {newCourse.documents.map((doc, index) => (
@@ -1184,6 +1228,9 @@ const CoursesManagement = () => {
                     Program
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Time
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Price
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1245,6 +1292,11 @@ const CoursesManagement = () => {
                             {course.programType}
                           </span>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 capitalize">
+                            {course.courseCategory}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           ${course.price}
                         </td>
@@ -1270,7 +1322,7 @@ const CoursesManagement = () => {
                 ) : (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="7"
                       className="px-6 py-4 text-center text-sm text-gray-500"
                     >
                       <div className="flex flex-col items-center justify-center py-8">
